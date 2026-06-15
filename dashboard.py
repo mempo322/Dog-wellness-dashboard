@@ -10,6 +10,7 @@ Then in another terminal:
     streamlit run dashboard.py
 """
 import os
+from datetime import date, timedelta
 
 import requests
 import streamlit as st
@@ -19,6 +20,33 @@ from market_data import HK_MARKET_OVERVIEW, HK_MARKET_SOURCES
 API_BASE = os.environ.get("TECHPUP_API_BASE", "http://127.0.0.1:8000")
 
 SUPPORTED_BREEDS = ["Tong Gau", "Poodle", "Shiba Inu", "Pembroke Welsh Corgi", "Golden Retriever"]
+
+# XP needed per avatar level - flat curve, see research/core-game-loop-blueprint.md
+XP_PER_LEVEL = 50
+
+# Reward-economy badges (Section 2.5, research/retention-monetization-strategy.md).
+# Each entry: badge_id -> (emoji, label).
+BADGES = {
+    "first_steps": ("🐾", "First Steps - completed your first mission"),
+    "streak_3": ("🔥", "3-Day Streak"),
+    "streak_7": ("🔥", "7-Day Streak"),
+    "streak_30": ("🔥", "30-Day Streak"),
+    "thriving": ("🤩", "Thriving! - first time at peak wellness"),
+    "joint_health_guardian": ("🛡️", "Joint Health Guardian - recovered from a vet-flagged mood"),
+}
+
+GOOD_MOODS = {"thriving", "happy", "content"}
+VET_FLAGGED_MOODS = {"concerned", "distressed"}
+
+
+def _init_progress_state():
+    st.session_state.setdefault("pupcoins", 0)
+    st.session_state.setdefault("xp", 0)
+    st.session_state.setdefault("streak", 0)
+    st.session_state.setdefault("last_mission_date", None)
+    st.session_state.setdefault("last_mood", None)
+    st.session_state.setdefault("badges", set())
+    st.session_state.setdefault("avatar_result", None)
 
 st.set_page_config(page_title="TechPup Internal Dashboard", page_icon="🐾", layout="wide")
 st.title("🐾 TechPup Internal Dashboard")
@@ -98,7 +126,20 @@ with tab_wellness:
                     (st.success if flag == "normal" else st.warning)(flag)
 
 with tab_avatar:
+    _init_progress_state()
+
     st.write("Preview the 'Reverse Tamagotchi' avatar state for a wearable reading.")
+
+    level = st.session_state.xp // XP_PER_LEVEL + 1
+    xp_into_level = st.session_state.xp % XP_PER_LEVEL
+    p1, p2, p3 = st.columns(3)
+    p1.metric("PupCoins", st.session_state.pupcoins)
+    p2.metric("Level", level)
+    p3.metric("Streak", f"{st.session_state.streak} day(s)")
+    st.progress(xp_into_level / XP_PER_LEVEL, text=f"{xp_into_level}/{XP_PER_LEVEL} XP to level {level + 1}")
+    if st.session_state.badges:
+        st.caption("Badges: " + "  ".join(BADGES[b][0] + " " + BADGES[b][1] for b in st.session_state.badges))
+
     a1, a2 = st.columns(2)
     with a1:
         av_breed = st.selectbox("Breed", SUPPORTED_BREEDS, key="avatar_breed")
@@ -144,15 +185,53 @@ with tab_avatar:
             if "detail" in result:
                 st.warning(result["detail"])
             else:
-                avatar = result["avatar"]
-                emoji = AVATAR_EMOJI.get(avatar["mood"], "🐶")
-                st.markdown(f"## {emoji} {avatar['mood'].title()} — {avatar['avatar_action'].replace('_', ' ')}")
-                st.write(avatar["message"])
-                if avatar["quest"]:
-                    st.info(f"Quest: {avatar['quest']}")
-                if avatar["vet_recommended"]:
-                    st.warning("A vet check is recommended.")
-                st.metric("Coins earned", avatar["currency_earned"])
+                st.session_state.avatar_result = result
+
+    result = st.session_state.avatar_result
+    if result:
+        avatar = result["avatar"]
+        emoji = AVATAR_EMOJI.get(avatar["mood"], "🐶")
+        st.markdown(f"## {emoji} {avatar['mood'].title()} — {avatar['avatar_action'].replace('_', ' ')}")
+        st.write(avatar["message"])
+        if avatar["vet_recommended"]:
+            st.warning("A vet check is recommended.")
+
+        if avatar["quest"]:
+            st.info(f"Mission: {avatar['quest']}")
+            today = date.today()
+            already_done = st.session_state.last_mission_date == today
+            if already_done:
+                st.success("Today's mission is already complete - come back tomorrow!")
+            elif st.button(f"Complete mission (+{avatar['currency_earned']} PupCoins, +{avatar['xp_earned']} XP)"):
+                if st.session_state.last_mission_date == today - timedelta(days=1):
+                    st.session_state.streak += 1
+                else:
+                    st.session_state.streak = 1
+                st.session_state.last_mission_date = today
+                st.session_state.pupcoins += avatar["currency_earned"]
+                st.session_state.xp += avatar["xp_earned"]
+
+                new_badges = set()
+                if "first_steps" not in st.session_state.badges:
+                    new_badges.add("first_steps")
+                for streak_len, badge in [(3, "streak_3"), (7, "streak_7"), (30, "streak_30")]:
+                    if st.session_state.streak >= streak_len:
+                        new_badges.add(badge)
+                if avatar["mood"] == "thriving":
+                    new_badges.add("thriving")
+                if st.session_state.last_mood in VET_FLAGGED_MOODS and avatar["mood"] in GOOD_MOODS:
+                    new_badges.add("joint_health_guardian")
+
+                st.session_state.last_mood = avatar["mood"]
+                newly_earned = new_badges - st.session_state.badges
+                st.session_state.badges |= new_badges
+                for badge in newly_earned:
+                    badge_emoji, badge_label = BADGES[badge]
+                    st.balloons()
+                    st.success(f"Badge unlocked: {badge_emoji} {badge_label}")
+                st.rerun()
+        else:
+            st.session_state.last_mood = avatar["mood"]
 
 with tab_market:
     st.subheader("Hong Kong Pet Market — Reference Snapshot")

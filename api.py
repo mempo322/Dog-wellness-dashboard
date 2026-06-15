@@ -500,6 +500,7 @@ def compute_avatar_state(score: dict, reading: WearableReading) -> dict:
         "quest": texts.get("quest"),
         "vet_recommended": meta["vet_recommended"],
         "currency_earned": meta["currency_earned"],
+        "xp_earned": round(score["overall_score"] / 10, 1),
     }
 
 

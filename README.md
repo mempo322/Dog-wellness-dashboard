@@ -16,7 +16,11 @@ pet-market reference data.
 - `market_data.py` — static Hong Kong pet-market stats and source links
   (USDA report, trade.gov, Gitnux, Bangkok Post).
 - `dashboard.py` — Streamlit dashboard with four tabs: Breed Intelligence,
-  Wellness Score, Reverse Tamagotchi, and HK Market.
+  Wellness Score, Reverse Tamagotchi, and HK Market. The Reverse Tamagotchi
+  tab implements the core game loop from `research/core-game-loop-blueprint.md`:
+  each avatar mood surfaces one daily mission (the breed-specific `quest`),
+  completing it awards PupCoins and XP (tracked in session state), and
+  streaks/badges unlock per `research/retention-monetization-strategy.md`.
 - `requirements.txt`, `.env.example`
 
 ## Setup
@@ -62,7 +66,7 @@ API elsewhere).
 - `POST /avatar/state` — same body as `/wellness/score`, returns
   `{wellness, avatar}` where `avatar` is a "Reverse Tamagotchi" mood
   (`mood`, `avatar_action`, `message`, `quest`, `vet_recommended`,
-  `currency_earned`)
+  `currency_earned`, `xp_earned`)
 
 ## Mood matrix
 
