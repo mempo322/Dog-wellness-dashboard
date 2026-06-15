@@ -160,6 +160,42 @@ class WearableReading(BaseModel):
     poodle_size: Optional[str] = None  # "standard" | "miniature" | "toy" - only used when breed is Poodle
 
 
+# Recovery Index weighting per breed: how much sleep, morning mobility,
+# heart-rate stability, and activity balance (how close today's activity
+# is to the breed's daily baseline) each contribute to a single 0-100
+# "how well is this dog bouncing back" metric. Weights are tuned to each
+# breed's known risk profile (joints, cardiovascular sensitivity, etc.)
+# and always sum to 1.0.
+BREED_RECOVERY_WEIGHTS = {
+    "tong gau": {"sleep": 0.30, "mobility": 0.20, "heart_rate": 0.20, "activity_balance": 0.30},
+    "poodle": {"sleep": 0.25, "mobility": 0.30, "heart_rate": 0.20, "activity_balance": 0.25},
+    "shiba inu": {"sleep": 0.20, "mobility": 0.20, "heart_rate": 0.35, "activity_balance": 0.25},
+    "pembroke welsh corgi": {"sleep": 0.20, "mobility": 0.35, "heart_rate": 0.20, "activity_balance": 0.25},
+    "golden retriever": {"sleep": 0.20, "mobility": 0.30, "heart_rate": 0.20, "activity_balance": 0.30},
+}
+
+
+def compute_recovery_index(profile: dict, reading: WearableReading, hr_score: float, activity_ratio: float) -> float:
+    """A single 0-100 "recovery" metric blending sleep, morning mobility,
+    heart-rate stability, and activity balance, weighted per breed via
+    BREED_RECOVERY_WEIGHTS.
+
+    Activity balance peaks at 100 when activity_ratio is exactly 1.0 (right
+    at the breed's daily baseline) and falls off the further the dog is from
+    that baseline in either direction.
+    """
+    weights = BREED_RECOVERY_WEIGHTS[profile["key"]]
+    activity_balance = max(0.0, 100 - abs(activity_ratio - 1.0) * 100)
+
+    return round(
+        reading.sleep_quality * weights["sleep"]
+        + reading.morning_mobility * weights["mobility"]
+        + hr_score * weights["heart_rate"]
+        + activity_balance * weights["activity_balance"],
+        1,
+    )
+
+
 def compute_wellness_score(reading: WearableReading) -> dict:
     profile = _lookup_breed(reading.breed, reading.poodle_size)
     flags = []
@@ -194,6 +230,7 @@ def compute_wellness_score(reading: WearableReading) -> dict:
     overall = round(
         activity_score * 0.3 + hr_score * 0.25 + weight_score * 0.2 + joint_health_score * 0.25, 1
     )
+    recovery_index = compute_recovery_index(profile, reading, hr_score, activity_ratio)
 
     return {
         "breed": profile["display_name"],
@@ -204,6 +241,7 @@ def compute_wellness_score(reading: WearableReading) -> dict:
         "weight_score": round(weight_score, 1),
         "joint_health_score": round(joint_health_score, 1),
         "activity_ratio": round(activity_ratio, 2),
+        "recovery_index": recovery_index,
         "mobility_min": mobility_min,
         "flags": flags or ["normal"],
     }
@@ -428,9 +466,30 @@ BREED_AVATAR_MESSAGES = {
 }
 
 
+# Per-breed activity-ratio bounds used by _determine_mood, reflecting each
+# breed's documented exercise tolerance:
+# - Golden Retriever has high daily activity needs, so it tips into
+#   "anxious" (under-stimulated) at a higher activity ratio than the rest.
+# - Shiba Inu and Corgi are more prone to HR spikes / back-and-joint strain
+#   under overexertion, so they tip into "overtired" sooner.
+# - Tong Gau is an adaptable, resilient breed and gets the widest
+#   "thriving" window.
+BREED_MOOD_THRESHOLDS = {
+    "tong gau": {"thriving_activity_ratio": (0.65, 1.35), "anxious_activity_ratio_max": 0.2, "overtired_activity_ratio_min": 1.3},
+    "poodle": {"thriving_activity_ratio": (0.7, 1.3), "anxious_activity_ratio_max": 0.2, "overtired_activity_ratio_min": 1.3},
+    "shiba inu": {"thriving_activity_ratio": (0.7, 1.3), "anxious_activity_ratio_max": 0.25, "overtired_activity_ratio_min": 1.2},
+    "pembroke welsh corgi": {"thriving_activity_ratio": (0.7, 1.3), "anxious_activity_ratio_max": 0.25, "overtired_activity_ratio_min": 1.2},
+    "golden retriever": {"thriving_activity_ratio": (0.75, 1.25), "anxious_activity_ratio_max": 0.3, "overtired_activity_ratio_min": 1.3},
+}
+
+
 def _determine_mood(score: dict, reading: WearableReading) -> str:
     """Pick a mood for the avatar, using a cross-signal matrix first and
     falling back to severity-graded wellness sub-scores.
+
+    The cross-signal matrix is tuned per breed via BREED_MOOD_THRESHOLDS
+    (activity-ratio bounds) and score["recovery_index"] (a breed-weighted
+    blend of sleep, mobility, heart rate, and activity balance).
     """
     flags = score["flags"]
     overall = score["overall_score"]
@@ -438,24 +497,30 @@ def _determine_mood(score: dict, reading: WearableReading) -> str:
     weight_score = score["weight_score"]
     activity_ratio = score["activity_ratio"]
     mobility_min = score["mobility_min"]
+    recovery_index = score["recovery_index"]
     hr_elevated = "elevated heart rate" in flags
     sleep = reading.sleep_quality
     mobility = reading.morning_mobility
+
+    thresholds = BREED_MOOD_THRESHOLDS[score["breed_key"]]
+    thriving_low, thriving_high = thresholds["thriving_activity_ratio"]
+    anxious_activity_ratio_max = thresholds["anxious_activity_ratio_max"]
+    overtired_activity_ratio_min = thresholds["overtired_activity_ratio_min"]
 
     # 1. Poor sleep + low activity + elevated HR + below-normal mobility -> pain/distress
     if sleep < 50 and mobility < mobility_min and activity_ratio < 0.5 and hr_elevated:
         return "distressed"
 
     # 2. Poor sleep + high activity + elevated HR -> overtired/frustrated
-    if sleep < 50 and activity_ratio > 1.3 and hr_elevated:
+    if sleep < 50 and activity_ratio > overtired_activity_ratio_min and hr_elevated:
         return "overtired"
 
     # 3. High sleep + near-zero activity + elevated HR -> anxious/under-stimulated
-    if sleep > 85 and activity_ratio < 0.2 and hr_elevated:
+    if sleep > 85 and activity_ratio < anxious_activity_ratio_max and hr_elevated:
         return "anxious"
 
     # 4. High sleep + optimal activity + baseline HR + normal mobility -> content/relaxed
-    if sleep > 85 and mobility >= mobility_min and hr_score == 100.0 and 0.7 <= activity_ratio <= 1.3:
+    if sleep > 85 and mobility >= mobility_min and hr_score == 100.0 and thriving_low <= activity_ratio <= thriving_high:
         return "thriving"
 
     # --- Fallback: severity-graded generic moods ---
@@ -463,7 +528,7 @@ def _determine_mood(score: dict, reading: WearableReading) -> str:
     if "possible joint discomfort - recommend vet check" in flags or hr_score < 60 or weight_score < 60:
         return "concerned"
 
-    if hr_score < 95 or weight_score < 95:
+    if recovery_index < 60 or hr_score < 95 or weight_score < 95:
         return "uneasy"
 
     if "overexertion risk" in flags:
@@ -472,7 +537,7 @@ def _determine_mood(score: dict, reading: WearableReading) -> str:
     if "low activity" in flags:
         return "bored"
 
-    if overall >= 90:
+    if overall >= 90 and recovery_index >= 85:
         return "thriving"
 
     if overall >= 75:

@@ -59,10 +59,13 @@ API elsewhere).
   normal morning-mobility floor (%)
 - `POST /wellness/score` — body `{breed, activity_minutes, heart_rate_bpm,
   weight_kg, sleep_quality, morning_mobility}` (the last two are 0-100),
-  returns an overall 0-100 wellness score plus per-factor scores and flags
-  (e.g. "low activity", "elevated heart rate", "weight deviation",
-  "possible joint discomfort - recommend vet check" when morning mobility is
-  below the breed's normal floor and sleep quality is also low)
+  returns an overall 0-100 wellness score plus per-factor scores
+  (activity, heart rate, weight, joint health, and a breed-weighted
+  `recovery_index` blending sleep, morning mobility, heart-rate stability,
+  and activity balance) and flags (e.g. "low activity", "elevated heart
+  rate", "weight deviation", "possible joint discomfort - recommend vet
+  check" when morning mobility is below the breed's normal floor and sleep
+  quality is also low)
 - `POST /avatar/state` — same body as `/wellness/score`, returns
   `{wellness, avatar}` where `avatar` is a "Reverse Tamagotchi" mood
   (`mood`, `avatar_action`, `message`, `quest`, `vet_recommended`,

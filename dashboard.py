@@ -117,11 +117,12 @@ with tab_wellness:
                 st.warning(result["detail"])
             else:
                 st.metric("Overall wellness score", f"{result['overall_score']} / 100")
-                s1, s2, s3, s4 = st.columns(4)
+                s1, s2, s3, s4, s5 = st.columns(5)
                 s1.metric("Activity", result["activity_score"])
                 s2.metric("Heart rate", result["heart_rate_score"])
                 s3.metric("Weight", result["weight_score"])
                 s4.metric("Joint health", result["joint_health_score"])
+                s5.metric("Recovery index", result["recovery_index"])
                 for flag in result["flags"]:
                     (st.success if flag == "normal" else st.warning)(flag)
 
