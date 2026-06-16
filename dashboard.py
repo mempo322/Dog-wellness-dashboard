@@ -56,7 +56,68 @@ tab_breed, tab_wellness, tab_avatar, tab_market = st.tabs(
     ["Breed Intelligence", "Wellness Score", "Reverse Tamagotchi", "HK Market"]
 )
 
+BREED_REFERENCE_TABLE = [
+    {
+        "Breed": "Tong Gau",
+        "Avg weight (kg)": "18",
+        "Resting HR (bpm)": "70–100",
+        "Daily activity (min)": "60–90",
+        "Morning mobility": "≥ 95%",
+        "Life span": "12–15 yr",
+        "Key health note": "Resilient joints; steady vitals — unusual readings carry more weight than in other breeds",
+    },
+    {
+        "Breed": "Poodle (Standard)",
+        "Avg weight (kg)": "25",
+        "Resting HR (bpm)": "60–80",
+        "Daily activity (min)": "60–90",
+        "Morning mobility": "≥ 90%",
+        "Life span": "12–15 yr",
+        "Key health note": "Luxating patella risk; watch for stiffness after rest",
+    },
+    {
+        "Breed": "Poodle (Miniature / Toy)",
+        "Avg weight (kg)": "3–7",
+        "Resting HR (bpm)": "100–130",
+        "Daily activity (min)": "25–45",
+        "Morning mobility": "≥ 90%",
+        "Life span": "12–15 yr",
+        "Key health note": "Higher luxating patella risk than Standard; avoid stairs and jumping when mobility dips",
+    },
+    {
+        "Breed": "Shiba Inu",
+        "Avg weight (kg)": "10",
+        "Resting HR (bpm)": "80–110",
+        "Daily activity (min)": "45–70",
+        "Morning mobility": "≥ 90%",
+        "Life span": "13–16 yr",
+        "Key health note": "HR spikes sharply under stress ('Shiba Scream'); elevated HR without exertion is a stronger signal than in calmer breeds",
+    },
+    {
+        "Breed": "Pembroke Welsh Corgi",
+        "Avg weight (kg)": "12",
+        "Resting HR (bpm)": "80–100",
+        "Daily activity (min)": "45–60",
+        "Morning mobility": "≥ 90%",
+        "Life span": "12–13 yr",
+        "Key health note": "Long spine / short legs (chondrodysplasia) — mobility drops are an early IVDD warning; avoid hills and jumping",
+    },
+    {
+        "Breed": "Golden Retriever",
+        "Avg weight (kg)": "30",
+        "Resting HR (bpm)": "60–80",
+        "Daily activity (min)": "80–120",
+        "Morning mobility": "≥ 85%",
+        "Life span": "10–12 yr",
+        "Key health note": "Hip & elbow dysplasia risk increases with age; gradual mobility decline is more significant than a single low reading",
+    },
+]
+
 with tab_breed:
+    st.subheader("Normal conditions — all breeds at a glance")
+    st.dataframe(BREED_REFERENCE_TABLE, use_container_width=True, hide_index=True)
+
+    st.divider()
     breed_name = st.selectbox("Breed", SUPPORTED_BREEDS, key="breed_select")
     if st.button("Look up breed", key="breed_lookup"):
         try:
