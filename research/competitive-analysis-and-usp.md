@@ -1,7 +1,5 @@
 # TechPup Research: Why Pet Apps Lose Users, and What TechPup Should Do Differently
 
-Research date: 2026-06-15
-
 ## 1. Competitive Analysis Report
 
 ### Whistle
@@ -70,27 +68,23 @@ The original Tamagotchi is a forty-year-old proof of concept that a fictional cr
 
 ## 3. Analysis of Why Pet Apps Are Abandoned
 
-The most common failure is that the app is just a dashboard. FitBark users describe it as "a doggie pedometer" — numbers with no story, no action, and no feeling attached. Once the novelty of seeing a stat wears off, which typically takes one to two weeks, there is no reason to open the app again. A wellness score is not a daily trigger; it is a reference number that becomes stale.
+- **The app is just a dashboard.** Numbers with no story attached lose their novelty within one to two weeks. A wellness score tells the owner something happened — it doesn't say what to do next, and gives no reason to come back tomorrow.
 
-A related failure is tying product value to fragile hardware. Whistle's August 2025 shutdown instantly destroyed retention for its entire user base — not gradually, but overnight. When the app is the hardware, a single business or infrastructure failure kills the relationship with every user simultaneously. The data, the history, and the emotional investment all disappear together.
+- **Value is locked to fragile hardware.** When the product depends on a specific device, one business failure erases every user's data and history overnight (Whistle, Aug 2025). Users don't just churn — they lose everything they stored, which destroys trust permanently.
 
-Subscription friction and bad billing practices do not just cause churn — they create detractors. Woofz's inability to cancel in-app converts users who simply wanted to stop paying into people who actively warn others away. In a category where word-of-mouth (sharing a cute dog story or recommending an app to a fellow dog owner) is the cheapest possible growth channel, manufactured resentment is extraordinarily expensive.
+- **Bad billing turns churned users into detractors.** Making cancellation hard (Woofz) doesn't slow churn — it converts quiet leavers into people who warn others. In a category driven by word-of-mouth among dog owners, that reputational damage costs more than the subscription revenue saved.
 
-Stage-locked content has a built-in expiry date. Zigzag is a well-designed product that stops being relevant the moment the puppy phase ends, which happens around twelve to sixteen weeks. Users do not churn from Zigzag — they graduate out of it by design. Any pet app that ties its value to a single life stage will face this ceiling, and TechPup's five breeds spanning all life stages make it avoidable.
+- **Stage-locked content has a built-in expiry.** Zigzag is well-designed but only relevant for the twelve-to-sixteen week puppy phase. Once that ends, there is nothing left. Any app tied to a single life stage will face this ceiling by design.
 
-Content-library apps like Pupford face the "depth without a loop" problem. A large library is valuable when someone is looking for something specific, but it does not generate a daily pull. Without a concrete reason to open the app today specifically — a streak at risk, a mission to complete, a character to check on — the app competes against every other content platform on the home screen, and it loses.
+- **Content depth without a daily loop doesn't retain users.** Pupford has a large library but no streak, no mission, and no character to check on. A library is useful when you're searching for something — it doesn't pull you back on a Tuesday with no specific goal.
 
-The deepest failure across nearly every pet app is the absence of emotional stake. The owner — not the dog — is the actual user, and owners who do not feel something when they open the app will eventually stop opening it. Apps that rely on the owner's self-discipline rather than giving them something to feel responsible for are working against the fundamental psychology of habit formation. This is the mechanism behind the near-universal 60–70% user drop-off by month three in subscription products: self-discipline is not a retention strategy.
+- **No emotional stake.** The owner is the user, not the dog. Apps that rely on the owner's self-discipline rather than giving them something to feel — responsibility, pride, attachment to a character — hit the near-universal 60–70% drop-off by month three. Self-discipline is not a retention strategy.
 
-Finally, even genuinely good loop mechanics decay over time without fresh content. Pokémon Go's revenue more than halved between its 2020 peak and 2024 despite best-in-class gamification. For TechPup, this is the argument for treating content (new breeds, seasonal quests, community challenges, avatar evolutions) as a continuous product investment rather than a one-time build.
+- **Even great loops decay without fresh content.** Pokémon Go's revenue more than halved from its 2020 peak despite best-in-class mechanics. New breeds, seasonal quests, and community events aren't optional extras — they're what keeps a loop alive past year one.
 
 ---
 
 ## 4. Proposed TechPup USP Framework
-
-> **"TechPup is the only pet-wellness app where your dog's real biometric data becomes a living character — one that reflects your dog's *actual breed-specific health*, never gets bricked by a subscription lapse, and never shames you, only invites you to act."**
-
-### Four Pillars
 
 1. **Living Avatar, Not a Dashboard** — `compute_avatar_state` already turns wellness scores into a mood (thriving/bored/concerned/distressed, etc.). This is TechPup's wedge against Whistle/Tractive/FitBark, all of which stop at charts. The avatar is the daily trigger (Duolingo's "one simple action" = "check on your dog's avatar").
 
@@ -99,11 +93,6 @@ Finally, even genuinely good loop mechanics decay over time without fresh conten
 3. **Shame-Free Quest Loop, Borrowed from Finch** — every mood maps to a concrete, breed-tailored quest (a walk, a brain-drain game, a recovery setup) rather than a guilt notification. This avoids Woofz's "subscription nag" reputation and Tamagotchi's harsh neglect penalty, while keeping Tamagotchi's core hook: *the avatar's state depends on you*.
 
 4. **Hardware-Independent Permanence** — unlike Whistle, TechPup's avatar/history must survive a device swap, a subscription pause, or a hardware-vendor failure. The relationship is with the *avatar and the data*, not the collar. This directly inoculates TechPup against the single biggest failure mode seen in this research (Whistle's collapse).
-
-### How this maps to existing code
-- `compute_wellness_score` + `compute_avatar_state` (`api.py`) already implement Pillar 1 & 2.
-- `BREED_AVATAR_MESSAGES` quest text (just rewritten) implements Pillar 3.
-- Pillar 4 is a product/infra decision: avatar state and history should be stored against the *dog's profile*, not the *device ID*, so it persists across hardware changes.
 
 ---
 
