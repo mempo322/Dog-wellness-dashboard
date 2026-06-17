@@ -1,103 +1,322 @@
-# TechPup Research: Why Pet Apps Lose Users, and What TechPup Should Do Differently
+# TechPup — Product & Developer Specification
 
-## 1. Competitive Analysis Report
-
-### Whistle
-Once the market leader in pet GPS and health monitoring, Whistle exemplified the danger of building a product that lives or dies with its hardware. Its core loop was passive: the collar synced location and activity data to the app, owners glanced at a dashboard, and Whistle charged an annual subscription for the privilege. The model worked while the brand carried real trust with vets and health-conscious owners. But in August 2025, Tractive acquired Whistle and shut down the service — not gradually, but immediately — bricking active devices and voiding prepaid subscriptions overnight. Years of user data and activity history vanished in a single announcement. The collapse was not a slow product failure; it was a single-point-of-failure event that destroyed trust instantly, and it stands as the clearest possible warning against hardware-locked pet apps.
-
-### Tractive
-Tractive is the European GPS tracker that absorbed Whistle's user base after the 2025 acquisition. Its retention comes from genuine utility: live location tracking, geofencing alerts, and escape notifications are features owners cannot ignore because a lost dog is painful and urgent. Tractive has also layered in activity stats and health score summaries, nudging the product toward wellness territory. Its structural weakness is that the GPS hardware is useless without a subscription ($5–12/month), meaning every renewal is a fresh friction event and the relationship with the app is permanently mediated by a billing decision. Once the dog stops escaping or the owner decides the $12 is no longer justified, the churn calculation resets to zero — no emotional investment survives past the last billing date.
-
-### Fi
-Fi is the most premium dog GPS and activity tracker in the US market, priced at around $149 for the collar and $99–189 per year for the subscription. Its standout technical advantage is battery life — two to three months on a charge compared to Tractive's days — which eliminates the day-to-day charging friction that erodes retention in competing products. Fi has also added an AI behavior detection layer and a "Pack" social leaderboard where dogs in a neighborhood are ranked by steps walked. That leaderboard is the closest Fi comes to genuine gamification, and it works: owners go on extra walks to move up the Pack ranking. The core limitation is that Fi's value proposition is about safety and data rather than daily emotional engagement. The cost over five years approaches $1,000, and while safety is a strong reason to pay, it is not a daily reason to open the app.
-
-### FitBark
-FitBark is a no-frills activity tracker that clips onto any collar and competes on accuracy and veterinary credibility rather than consumer-app polish. Its defining feature is breed-adjusted daily activity benchmarking — FitBark data integrates with Fitbit and Apple Health and produces vet-shareable PDF reports, giving the product a second audience beyond the owner. For users who want honest health data for a medical reason, FitBark has a defensible niche. For the broader consumer market, however, FitBark is consistently described as "a doggie pedometer": the app UI is dated, live tracking requires a paired human fitness device, and Bluetooth sync reliability is a recurring complaint. The breed benchmark is the product's best idea, but it stops at a comparison chart rather than a call to action — there is no daily hook that pulls the owner back once the novelty of seeing the number wears off.
-
-### Woofz
-Woofz is a Duolingo-style dog training app that generates personalised daily lesson plans — mostly positive-reinforcement training commands broken into five-minute video segments and tracked day over day with streak counters. For a motivated owner with a new or undertrained dog, the format genuinely works: short lessons lower the barrier to daily practice, and breed-adjusted content gives the feeling of a personalised plan. But Woofz's reputation is heavily damaged by its billing practices. Cancellation through the app is not available in all markets, charges have appeared simultaneously across both the App Store and the app's own website, and free-trial conversions to paid subscriptions have caught users off guard. Reviews in 2024–2025 are dominated by billing complaints rather than product feedback — a signal that the monetisation model has become the product's defining feature, not the training content itself.
-
-### Zigzag
-Zigzag is the most research-backed app in the puppy training space, built around a twelve-week structured curriculum written with input from professional canine behaviourists. The daily lesson format is clear, the content is genuinely good, and the structured arc gives new puppy owners a sense of direction during one of the most overwhelming periods of dog ownership. Its retention problem is architectural: the product is designed around a twelve-to-sixteen week window — the puppy socialisation and basic training period — and once that window closes, the curriculum ends and there is nothing left to offer. Users do not churn from Zigzag so much as they graduate out of it by design. For TechPup, which spans five breeds across all life stages, this is an avoidable trap — the product should be built so that retention grows with the dog's age rather than ending at it.
-
-### Pupford
-Pupford is a large-scale dog training content platform — trainer-led video courses, podcasts, articles, and a physical treats and product line — positioned as a one-stop resource for dog owners at any stage. Its content library is genuinely deep, and a freemium model allows broad top-of-funnel entry before gating advanced courses behind a subscription. The core retention problem is that Pupford has content but no loop. There is no daily trigger, no streak, no mission, and no character to check on — the app competes on the home screen against every other content platform, which is a losing position for an optional wellness category. Without a mechanism that makes the owner feel they need to open the app today specifically, Pupford's retention relies entirely on the user's intrinsic motivation, and intrinsic motivation is not a retention strategy.
-
-### Duolingo *(reference model, not a competitor)*
-Duolingo is included here not as a competitor but as the most studied example of sustained habit formation in consumer software. Monthly churn fell from 47% in 2020 to 28% in 2025, and daily active users rose 36% year-over-year in the same period. The mechanism is well understood: one small mandatory action per day (a single lesson), a streak counter that triggers loss-aversion psychology, variable rewards (randomised XP bonuses, rare Legendary rounds, surprise chest unlocks), push notifications timed to the user's usual session window, and social leagues that add light competitive pressure without punishing non-participants. None of this is proprietary — Duolingo largely codified what game designers already knew — but it proved the model works at scale inside a "joyless obligation" category (language learning), which strongly suggests it will work inside a higher-emotional-stakes one (dog care).
-
-### Finch
-Finch is a self-care app built around a virtual pet bird whose growth depends on the owner completing real-life wellbeing tasks — drinking water, going outside, doing a breathing exercise, writing a journal entry. The product is not about the tasks themselves; it is about the bird. Users consistently describe showing up for Finch not because they wanted to do a wellness task, but because they did not want their bird to miss out on growth energy. This is the Reverse Tamagotchi mechanic in its clearest modern form: the emotional investment is in the avatar, and the real-world behaviour is the mechanism that feeds it — not the end goal. Finch's weakness is that the home screen becomes cluttered over time as goals, pet status indicators, and adventure options multiply. Too many things competing for attention erodes the simplicity that made the daily open feel effortless.
-
-### Pokémon Go
-Pokémon Go generated $1.3 billion in revenue in 2020 at its peak and still held $544 million in 2024 — making it the most durable example of long-tail retention in mobile gaming. The retention drivers are deliberately layered: walking spawns new Pokémon (physical behaviour loop), monthly Community Days and seasonal events create FOMO urgency, catching every species drives completionism, and raids and friend interactions turn the game into a real-world social ritual that happens to take place in parks and on walking paths. The dog-walking parallel is direct and obvious. Pokémon Go's gradual revenue decline after 2020 also illustrates the ceiling: even best-in-class loop mechanics eventually decay without a constant supply of fresh content. For TechPup, this is the clearest argument for a content pipeline — new breeds, seasonal quests, community challenges — to avoid the same long-term flattening.
-
-### Tamagotchi
-The original Tamagotchi is a forty-year-old proof of concept that a fictional creature can generate genuine emotional obligation in a human caregiver. Feed it, clean after it, and play with it on a schedule, or it gets sick and eventually "leaves" — that loss-consequence mechanic drove obsessive, anxiety-driven retention across two decades and multiple product revivals. For TechPup, Tamagotchi is both the inspiration and the warning. The inspiration: emotional attachment to a character is a far more reliable daily trigger than any notification, chart, or content library. The warning: Tamagotchi has no real-world utility, its retention is entirely novelty-driven, and when the emotional attachment fades — usually because the neglect penalty is too harsh or too repetitive — there is nothing underneath it. TechPup's version, where the avatar's mood reflects the dog's *real* biometrics rather than a synthetic countdown timer, is the direct answer to Tamagotchi's hollow core.
+**Company:** Visual Earth Limited (Hong Kong)
+**Product:** TechPup — Dog wellness app with a "Reverse Tamagotchi" avatar engine
+**Document purpose:** Guide for developers building the mobile/web application
 
 ---
 
-**Pattern across the wearable and training apps (Whistle, Tractive, Fi, FitBark, Woofz, Zigzag, Pupford):** they sell either raw data (charts, GPS pings) or generic content (training videos), and ask the owner to supply the motivation to keep checking in. The gamified apps (Duolingo, Finch, Pokémon Go, Tamagotchi) instead make the *app itself* the thing the user feels responsible for or attached to.
+## 1. What Is TechPup?
+
+TechPup is a dog wellness app for Hong Kong pet owners. The owner connects a wearable collar (or enters readings manually) and the app converts the dog's real biometric data — heart rate, activity, sleep quality, weight, and morning mobility — into a living avatar that reflects how the dog actually feels today.
+
+Unlike competitors (Whistle, FitBark, Tractive) that show charts and leave the owner to interpret the numbers, TechPup gives the owner a character to feel responsible for. The avatar's mood changes based on the dog's readings. Each mood unlocks a daily mission tailored to that breed. Completing missions earns in-app rewards (PupCoins, XP, badges). This creates a daily habit loop: check the avatar → complete a mission → come back tomorrow.
+
+The app is built on five focus breeds for the Hong Kong market: **Tong Gau, Poodle, Shiba Inu, Pembroke Welsh Corgi, and Golden Retriever.** All health baselines are breed-specific, not generic averages.
 
 ---
 
-## 2. Top 20 Retention Mechanisms Used by Successful Apps
+## 2. App Modules
 
-1. **Streaks with loss aversion** (Duolingo) — visible consecutive-day counter; breaking it feels like losing progress.
-2. **Variable/unpredictable rewards** (Duolingo, Pokémon Go) — randomized XP bonuses, rare spawns, surprise chests.
-3. **Single, simple daily core action** (Duolingo) — "do one lesson" — everything else funnels toward that.
-4. **A character that depends on you** (Finch, Tamagotchi) — the user is the caregiver, not just the data subject.
-5. **Shame-free positive reinforcement** (Finch) — rewards for showing up; no punishment for missing a day.
-6. **Visible growth/leveling tied to real behavior** (Finch, Tamagotchi) — the avatar visibly changes based on real-world actions.
-7. **Loss/neglect consequence with a *soft landing*** (Tamagotchi's harsh version vs. Finch's gentle version) — stakes without guilt-shaming.
-8. **Leaderboards / social leagues** (Duolingo leagues, Fi "Pack") — light competitive pressure among friends.
-9. **Push notifications timed to behavior gaps** (Duolingo, Woofz) — "you haven't logged today" nudges (must be low-frequency to avoid fatigue).
-10. **FOMO live events** (Pokémon Go Community Days) — recurring, time-boxed reasons to return.
-11. **Collection/completionism mechanics** (Pokémon Go — catching every species).
-12. **Real-world location/social rituals** (Pokémon Go — meeting other players at parks).
-13. **Vet/professional-shareable reports** (FitBark) — gives the data a second audience and purpose.
-14. **Breed/individual-specific benchmarks** (FitBark, Fi AI detection) — "normal for *your* dog," not a generic average.
-15. **Bite-sized daily content** (Woofz, Zigzag, Duolingo) — 5-10 minute lessons that fit into a routine.
-16. **Quests / actionable next steps** (Finch "adventures") — turns a passive score into a concrete to-do.
-17. **In-app currency tied to real-world actions** (Finch energy points) — gives behavior a tangible, spendable reward.
-18. **Long product lifespan / not stage-locked** (counter-example: Zigzag's 12-week puppy program expires by design — successful apps avoid a hard expiry).
-19. **Annual billing to reduce churn** (industry-wide) — annual plans churn 0.5-1.5%/mo vs. 5-8%/mo monthly.
-20. **Hardware-independent value** (counter-example: Whistle's collapse) — the app/avatar must survive even if a device fails or is upgraded.
+### Module 1 — Breed Intelligence
+**What it does:** Displays the normal health profile for each of the five supported breeds — average weight, resting heart rate range, daily activity range, normal morning mobility floor, lifespan, and key health risk. This is a reference screen, always visible without requiring any sensor data.
+
+**Who uses it:** Owners who want to understand what "normal" looks like for their specific breed. Also useful for vets and TechPup staff reviewing a dog's readings in context.
+
+**Current state:** Built. Shows a full reference table for all breeds + a detailed per-breed lookup with the breed's baselines.
+
+**Developer notes:**
+- Data lives in `BREED_PROFILES` in `api.py`. Breed lookup: `GET /breeds/{breed_name}` and `GET /breeds/{breed_name}/activity-baseline`.
+- Poodle has three size variants (standard / miniature / toy) with different HR ranges, activity ranges, and weights. All other breeds have a single profile.
+- Any new breed must be added to both `BREED_PROFILES` (physiology) and `BREED_AVATAR_MESSAGES` (mood/quest copy) in `api.py`.
+
+
+
+### Module 2 — Avatar / Reverse Tamagotchi *(core product)*
+**What it does:** This is the heart of TechPup. It takes the same wearable reading as the wellness engine and returns the dog's current avatar state: a mood, a visual action, a message from the dog's perspective, a breed-specific daily mission (quest), and reward amounts (PupCoins + XP). The owner then completes the mission in real life and taps "Complete" — which updates their streak, PupCoins, XP, level, and unlocks badges.
+
+**The 10 moods and what they mean:**
+
+| Mood | Condition | Vet recommended |
+|---|---|---|
+| `thriving` | Excellent sleep + optimal activity + normal HR + normal mobility | No |
+| `happy` | Good overall score (≥75) | No |
+| `content` | Acceptable overall score | No |
+| `bored` | Low activity flag, otherwise OK | No |
+| `tired` | Overexertion flag | No |
+| `uneasy` | HR or weight slightly off baseline | No |
+| `anxious` | Well-rested but near-zero activity + elevated HR | No |
+| `overtired` | Poor sleep + high activity + elevated HR | No |
+| `concerned` | Joint discomfort flag or significant HR/weight deviation | Yes |
+| `distressed` | Poor sleep + poor mobility + low activity + elevated HR | Yes |
+
+**Mood → Mission logic:** Every mood (except `thriving` and `happy`) maps to a breed-specific quest. The quest text is always a concrete real-world action — a walk at a breed-appropriate pace, a brain-drain puzzle game, a recovery setup — never a vague suggestion.
+
+**Reward amounts:**
+| Mood | PupCoins earned | XP earned |
+|---|---|---|
+| `thriving` | 20 | score ÷ 10 |
+| `happy` | 10 | score ÷ 10 |
+| `content` | 8 | score ÷ 10 |
+| `bored`, `tired`, `anxious` | 5 | score ÷ 10 |
+| `uneasy`, `overtired` | 2–3 | score ÷ 10 |
+| `concerned`, `distressed` | 0 | 0 |
+
+**Current state:** Built. Endpoint: `POST /avatar/state`. The dashboard tracks PupCoins, XP, streak, and badges in Streamlit session state (no database yet — data resets on page refresh).
+
+**Developer notes:**
+- Breed-specific mood logic is in `_determine_mood` (`api.py`). Each breed has its own activity-ratio thresholds (`BREED_MOOD_THRESHOLDS`) and recovery weighting (`BREED_RECOVERY_WEIGHTS`).
+- Avatar copy (messages + quest text) is in `BREED_AVATAR_MESSAGES` — one entry per breed per mood.
+- The avatar must never "punish" the owner. Even in `distressed` mode, the quest is a helpful action, not a guilt message. This is intentional and must be preserved.
+- Streak logic: if the owner completes a mission on consecutive days, the streak increments. Missing a day resets it to 1 (not 0) — the first action after a gap still counts.
+
+
+## 3. Core App Flow
+
+```
+Owner opens app
+    │
+    ▼
+Selects breed (+ Poodle size if applicable)
+    │
+    ▼
+Enters today's wearable reading
+(activity minutes, heart rate, weight, sleep quality, morning mobility)
+    │
+    ▼
+App calls POST /avatar/state
+    │
+    ▼
+Avatar mood is computed (one of 10 moods)
+    │
+    ├── Avatar displays: mood emoji + action + message from the dog
+    │
+    └── If mood has a quest:
+            │
+            ▼
+        Mission card shown: breed-specific real-world action
+            │
+            ▼
+        Owner completes the mission in real life
+            │
+            ▼
+        Taps "Complete mission" in the app
+            │
+            ▼
+        Rewards credited: PupCoins + XP
+        Streak updated (consecutive days)
+        Badges checked and unlocked
+            │
+            ▼
+        Owner comes back tomorrow
+```
+
+The entire loop must be completable in under 2 minutes per day. The reading entry → avatar update → mission complete sequence should feel as fast as checking a notification.
 
 ---
 
-## 3. Analysis of Why Pet Apps Are Abandoned
+## 4. Retention Mechanisms to Implement
 
-- **The app is just a dashboard.** Numbers with no story attached lose their novelty within one to two weeks. A wellness score tells the owner something happened — it doesn't say what to do next, and gives no reason to come back tomorrow.
+Listed in priority order. Mechanisms already built are marked **[live]**.
 
-- **Value is locked to fragile hardware.** When the product depends on a specific device, one business failure erases every user's data and history overnight (Whistle, Aug 2025). Users don't just churn — they lose everything they stored, which destroys trust permanently.
+### Priority 1 — Daily habit foundations
+- **[live] Daily streak counter** — visible on the avatar screen. Shows how many consecutive days the owner has completed a mission. Breaking a streak resets to 1 (not 0) to avoid discouraging recovery.
+- **[live] XP and level system** — 50 XP per level. XP is earned by completing missions; the amount depends on the wellness score of the day's reading. Level is displayed prominently.
+- **[live] PupCoins** — in-app currency earned through multiple sources (see reward economy below). Spent in the cosmetic shop on avatar outfits, accessories, and backgrounds — no pay-to-win.
+- **[live] Badges** — milestone unlocks (first mission, 3-day streak, 7-day streak, 30-day streak, first thriving reading, recovering from a vet-flagged mood). Each badge shows with emoji + label.
+- **Push notifications** — two per day maximum, timed to the morning and evening check-in windows. Never more than two. Example: "Good morning — Tong Gau is ready for today's check-in." *[not yet built]*
 
-- **Bad billing turns churned users into detractors.** Making cancellation hard (Woofz) doesn't slow churn — it converts quiet leavers into people who warn others. In a category driven by word-of-mouth among dog owners, that reputational damage costs more than the subscription revenue saved.
+### Priority 2 — Expanded reward economy
+The app must reward owners for more than just completing the daily mission. Multiple earning sources keep the economy active throughout the day and motivate daily login even on rest days.
 
-- **Stage-locked content has a built-in expiry.** Zigzag is well-designed but only relevant for the twelve-to-sixteen week puppy phase. Once that ends, there is nothing left. Any app tied to a single life stage will face this ceiling by design.
+**Twice-daily mission check-ins (morning + evening):**
+- The daily mission can be logged a maximum of 2 times per day: once in the morning window (06:00–12:00) and once in the evening window (17:00–22:00)
+- Each completed check-in awards the full mission PupCoin + XP reward
+- Completing both check-ins in one day gives a bonus (e.g. +5 coins for "Full day" consistency)
+- Outside those windows, the Complete button is disabled with a label showing when the next window opens
 
-- **Content depth without a daily loop doesn't retain users.** Pupford has a large library but no streak, no mission, and no character to check on. A library is useful when you're searching for something — it doesn't pull you back on a Tuesday with no specific goal.
+**Passive coin generation based on avatar state:**
+- Every 2 hours, if the avatar's current mood is `happy`, the owner earns a small passive coin award (suggested: 3–5 coins per 2-hour tick)
+- If the avatar is `thriving`, the passive award is doubled (2x multiplier)
+- Moods below `happy` earn no passive coins — this creates a gentle incentive to keep the dog's readings healthy
+- Developer note: this requires a background job or the coins to be calculated at next app open based on elapsed time since last reading
 
-- **No emotional stake.** The owner is the user, not the dog. Apps that rely on the owner's self-discipline rather than giving them something to feel — responsibility, pride, attachment to a character — hit the near-universal 60–70% drop-off by month three. Self-discipline is not a retention strategy.
+**Login streak bonuses:**
+- Every day the owner logs into the app (regardless of whether they complete a mission) the login streak counter increments
+- Day 7 login: large coin bonus (suggested: +100 coins) + XP bonus
+- Day 30 login: major haul (suggested: +500 coins + exclusive badge + cosmetic item unlock)
+- The login streak is separate from the mission streak — it resets only if the owner does not open the app at all for a full calendar day
 
-- **Even great loops decay without fresh content.** Pokémon Go's revenue more than halved from its 2020 peak despite best-in-class mechanics. New breeds, seasonal quests, and community events aren't optional extras — they're what keeps a loop alive past year one.
+### Priority 3 — Emotional engagement
+- **Health history timeline** — a scrollable log of the last 30 days of readings and moods. Lets the owner see trends ("Tong Gau has been tired three times this week"). This requires a database — currently all state is session-only. *[not yet built — needs database first]*
+- **Soft neglect signal** — if the owner has not logged a reading for 48+ hours, the avatar's expression shifts to "waiting" rather than the last-known mood. Creates mild urgency without punishing the owner. *[not yet built]*
+
+### Priority 4 — Social and community
+- **Dog social interactions** — see section 5.7 (in-person dog meeting ratings with coin rewards). *[not yet built]*
+- **Breed leaderboard** — a weekly top-10 list of dogs by total wellness score within the same breed. Light social pressure without unfair cross-breed comparisons. *[not yet built]*
+- **Shareable mood card** — one tap generates a shareable image: the avatar in its current mood + today's wellness score + breed name. Designed for WhatsApp and Instagram Stories. The app's primary word-of-mouth growth mechanism. *[not yet built]*
+
+### Priority 5 — Long-term retention
+- **Seasonal quests** — time-limited missions that replace the default quest for a week (e.g. "Lunar New Year walk challenge", "Summer hydration week"). Creates FOMO urgency and gives returning users a reason to open the app even on stable-routine days. *[not yet built]*
+- **Vet-shareable health report** — a PDF export of the last 30 days of readings, mood history, and flags. Gives the data a second audience (veterinarians) and makes TechPup feel medically legitimate. *[not yet built]*
+---
+
+## 5. Proposed New Features
+
+### 5.1 User Registration & Pet Profile
+**Why it matters:** Currently all gamification state (PupCoins, XP, streak, badges) resets when the page refreshes because there is no account or database. User registration is the single most important infrastructure addition — without it, none of the retention mechanics create lasting value, and social features (friends, leaderboards, in-person dog interactions) are impossible.
+
+**Registration flow:**
+
+*Step 1 — Owner account:*
+- Owner signs up with email + password, or via Apple/Google Sign-In
+- Profile fields: display name, profile photo (optional), city/district (for local leaderboard and social features)
+- One owner account can hold multiple dog profiles (see 5.2)
+
+*Step 2 — Pet registration (linked to the owner account):*
+- Fields: dog's name, breed (from the supported breed list), date of birth, sex, photo
+- Poodle owners also select size variant (standard / miniature / toy)
+- Optional: microchip number (for future vet-mode ID verification)
+- Each dog gets its own avatar, gamification state (PupCoins, XP, streak, badges), and reading history
+
+*What gets stored per dog:*
+- All wearable readings (timestamp + activity, HR, weight, sleep quality, morning mobility)
+- Computed wellness scores + mood per reading
+- PupCoins balance, XP total, current level, mission streak, login streak
+- Badges earned + dates
+- Cosmetic items owned + currently equipped
+
+**Tech recommendation:** PostgreSQL. Add `POST /auth/register`, `POST /auth/login`, `POST /dogs` (create dog profile), and `GET /dogs/{dog_id}/history` endpoints to the existing FastAPI backend. Protect all gamification and history endpoints with JWT auth.
 
 ---
 
-## 4. Proposed TechPup USP Framework
+### 5.2 Multiple Dog Support
+**Why it matters:** Many Hong Kong owners have more than one dog. An app that only tracks one dog is half as valuable in multi-dog households.
 
-1. **Living Avatar, Not a Dashboard** — `compute_avatar_state` already turns wellness scores into a mood (thriving/bored/concerned/distressed, etc.). This is TechPup's wedge against Whistle/Tractive/FitBark, all of which stop at charts. The avatar is the daily trigger (Duolingo's "one simple action" = "check on your dog's avatar").
-
-2. **Breed-Specific Intelligence as a Moat** — `BREED_PROFILES` encodes real physiology (Corgi back-strain risk, Poodle luxating patella, Shiba "Scream," Tong Gau resilience, Golden Retriever joint wear). Generic competitors (FitBark, Fi) use one-size-fits-all baselines. This is defensible: more breeds = more data = better moat, and it directly answers the "is this normal for *my* dog" question that drives FitBark's vet-report appeal.
-
-3. **Shame-Free Quest Loop, Borrowed from Finch** — every mood maps to a concrete, breed-tailored quest (a walk, a brain-drain game, a recovery setup) rather than a guilt notification. This avoids Woofz's "subscription nag" reputation and Tamagotchi's harsh neglect penalty, while keeping Tamagotchi's core hook: *the avatar's state depends on you*.
-
-4. **Hardware-Independent Permanence** — unlike Whistle, TechPup's avatar/history must survive a device swap, a subscription pause, or a hardware-vendor failure. The relationship is with the *avatar and the data*, not the collar. This directly inoculates TechPup against the single biggest failure mode seen in this research (Whistle's collapse).
+**What to build:** Dog switcher on the home screen. Each dog has its own avatar, streak, XP, and reading history. The leaderboard and sharing features work per-dog.
 
 ---
 
-## Success Outcome
+### 5.3 Avatar Visual System & Cosmetic Shop
+**Why it matters:** The avatar is the product's emotional core, but currently it is text-only. A visual avatar with a purchasable wardrobe dramatically increases emotional attachment and gives PupCoins a visible, meaningful purpose.
 
-**What makes TechPup different from every other pet app?**
+**What to build:**
 
-> Every competitor either hands the owner a chart (Whistle, Tractive, Fi, FitBark) or a content library (Woofz, Zigzag, Pupford) and hopes the owner's willpower does the rest. TechPup instead turns the dog's *real, breed-specific biometrics* into a character the owner feels responsible for — borrowing Duolingo's daily-trigger habit loop and Finch's shame-free care mechanic, while avoiding Tamagotchi's harsh penalties and Whistle's hardware-lock-in. **The data doesn't just describe the dog — it *is* the dog, in the app.**
+*Avatar visuals:*
+- Breed-specific base illustration for each of the 5 breeds
+- 10 mood expressions per breed (matching the 10 mood states)
+
+*Cosmetic shop — PupCoin-based, no level gates:*
+- Any cosmetic item can be purchased at any time with PupCoins, regardless of the owner's level
+- Items are not locked behind levels — earning more PupCoins is the path to more cosmetics, not grinding XP
+- Shop categories: outfits (coats, bandanas, hats, seasonal costumes), accessories (toys, backpacks, collar charms), backgrounds (park, beach, HK street, night cityscape)
+- New items rotate weekly and seasonally, so there is always something new to save toward
+- Cosmetics are purely visual — zero gameplay advantage, zero stat bonuses
+
+**Why no level gates:** Locking cosmetics behind levels shuts out new users for weeks. Making everything purchasable immediately means even a day-one owner can personalise their avatar — and that personal investment is what drives them to keep earning coins and returning daily.
+
+**Design constraint:** The avatar must never look sick, hurt, or distressed in a way that guilt-shames the owner. Even in `distressed` mode the avatar should look like it is resting and waiting for help, not suffering.
+
+---
+
+### 5.4 Dog Social — In-Person Meeting & Friend System
+**Why it matters:** Dog owners already form social bonds with other owners they meet at parks. TechPup can capture that existing real-world ritual and turn it into an in-app event — rewarding the most valuable social interaction in a dog owner's life and creating a reason to open the app right after a walk.
+
+**Feature: Dog Meeting Rating**
+
+After two dogs meet in real life, both owners open the app and rate the interaction. Each owner selects the outcome from their dog's perspective:
+
+| Outcome | Icon | Coins awarded | XP awarded | Notes |
+|---|---|---|---|---|
+| Growled / went their separate ways | 🐾 | 0 coins | +1 to Social Skills XP | Still recorded — social history builds over time |
+| Friends | 🐕 | +50 coins | +5 XP | Both dogs and both owners receive the reward |
+| Love at first sight | ❤️ | +250 coins | +20 XP | Triggers a fireworks animation on both owners' screens |
+
+- Both owners must submit the same meeting for it to count (prevents farming — one owner cannot award coins to themselves)
+- Meetings are linked by scanning the other owner's QR code or via proximity (Bluetooth / NFC tap)
+- A dog can only have one "Love" status at a time — if a new Love is registered, the previous one becomes "Friends"
+- Each dog builds a "Social Skills" XP track separate from the main XP level — a social leaderboard shows the most socially active dogs in the local area
+
+**Feature: Friend List**
+- After a "Friends" or "Love" meeting, the other dog is added to the friend list
+- Friend list shows each friend dog's current avatar mood (not raw health data)
+- If a friend's dog is in `bored` or `anxious` mood, a soft notification nudges the owner: "Buddy is bored — Tong Gau could use a walk too."
+- Friends can send each other one "Paw" (a small emoji reaction) per day, which earns 2 coins for the recipient
+
+**Developer notes:**
+- Requires user accounts (5.1) and a matching/verification mechanism for the two-owner confirmation
+- The fireworks animation on "Love" should be the same balloons/confetti mechanic already used for badge unlocks, scaled up
+- QR code per dog profile is the simplest pairing mechanism; Bluetooth proximity can follow in a later version
+
+---
+
+### 5.6 Breed Expansion
+**Why it matters:** Currently only 5 breeds are supported. The Hong Kong pet market includes Maltese, French Bulldog, Chihuahua, Labrador Retriever, and Border Collie as high-volume breeds.
+
+**What to build:** For each new breed, add to `BREED_PROFILES` (physiology data) and `BREED_AVATAR_MESSAGES` (10-mood quest copy). The mood logic in `_determine_mood` is breed-aware — new breeds inherit the correct threshold set via `BREED_MOOD_THRESHOLDS`.
+
+**Expansion priority for HK market:** Maltese → French Bulldog → Labrador Retriever → Border Collie → Chihuahua.
+
+---
+
+### 5.7 Wearable Integration
+**Why it matters:** Manual entry creates friction. Direct integration with a wearable collar (Bluetooth or API) removes the barrier between "reading the data" and "opening the app."
+
+**What to build:** A data ingest layer in the FastAPI backend that accepts readings pushed from a wearable SDK. The avatar update should be triggerable automatically when a new reading arrives, with a push notification to open the app.
+
+**Dependency:** Requires a partner collar hardware vendor. Until hardware is selected, maintain and optimise the manual entry flow.
+
+---
+
+### 5.8 Vet Mode
+**Why it matters:** FitBark's vet-shareable reports are its strongest retention mechanism. TechPup should match and exceed this.
+
+**What to build:**
+- PDF export of the last 30/90 days of readings, mood history, wellness scores, and flagged events
+- Vet-facing summary: "number of days flagged vet-recommended in the past 30 days", "average joint health score", "trend in morning mobility over 90 days"
+- QR code on the export that links to a read-only web view of the dog's health timeline (no account required for the vet to view)
+
+---
+
+## 6. Technical Stack
+
+| Layer | Technology |
+|---|---|
+| Backend API | FastAPI (Python) — `api.py` |
+| Dashboard (current) | Streamlit — `dashboard.py` |
+| Mobile app (future) | React Native or Flutter recommended |
+| Database (future) | PostgreSQL |
+| Deployment | To be decided — API must be accessible from mobile clients |
+
+**Key constraint:** The avatar and all health history must be stored against the **dog's profile**, not the device ID. If the owner changes their phone or collar, all data and gamification state must survive.
+
+---
+
+## 7. What Makes TechPup Different
+
+Every competitor either gives the owner a chart (Whistle, Tractive, Fi, FitBark) or a content library (Woofz, Zigzag, Pupford) and relies on the owner's willpower to keep coming back. TechPup gives the owner a character — their actual dog, reflected in data — that they feel responsible for. The avatar is the daily trigger. The mission is the action. The reward is the reason to return tomorrow.
+
+Four things no competitor currently does together:
+
+1. **Real biometrics become a living character.** The avatar's mood is computed from the dog's actual heart rate, sleep, mobility, and activity — not a synthetic timer or a generic chart.
+2. **Breed-specific intelligence.** Every threshold, every quest, and every health note is calibrated to that breed's documented physiology. A Corgi's distressed mission is not the same as a Golden Retriever's.
+3. **Shame-free quest loop.** Every mood maps to a positive action, never a guilt message. The owner is always invited to help, never accused of neglecting their dog.
+4. **Hardware-independent.** The relationship is with the avatar and the data, not the collar. A device swap, a subscription pause, or a hardware-vendor shutdown cannot erase the dog's history.
+
+> **The data doesn't just describe the dog — it *is* the dog, in the app.**
+
+---
+
+## Appendix — Competitive Context (Summary)
+
+| App | What they get right | What TechPup does instead |
+|---|---|---|
+| Whistle / Tractive / Fi | Real GPS utility, safety value | Replace "safety fear" with emotional attachment — daily pull vs. emergency pull |
+| FitBark | Breed benchmarks, vet reports | Same benchmarks + a living avatar + quests; vet report as a feature, not the core product |
+| Woofz | Duolingo-style daily lessons | Same daily habit loop, but the trigger is the avatar's mood, not a lesson notification |
+| Zigzag | Research-backed content | No stage expiry — the app grows with the dog across its entire lifespan |
+| Pupford | Deep content library | Content without a loop fails; TechPup's loop is the product, content feeds it |
+| Finch | Emotional avatar + real tasks | Same mechanic, applied to a real pet with real biometric data instead of a synthetic bird |
+| Tamagotchi | Emotional attachment + consequence | Same attachment, no harsh punishment, and real-world utility underneath the avatar |
+| Duolingo | Daily streak + variable rewards | Exact same mechanics applied to dog care; higher emotional stakes = stronger pull |
+| Pokémon Go | Walk-based loop + live events | Dog walks are already the activity; seasonal quests add the FOMO layer |
