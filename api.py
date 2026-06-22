@@ -10,6 +10,7 @@ to produce a wellness score and a "Reverse Tamagotchi" avatar/mood state.
 Run:
     uvicorn api:app --reload
 """
+from datetime import datetime
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -250,18 +251,54 @@ def compute_wellness_score(reading: WearableReading) -> dict:
 # Shared mechanics per mood (avatar pose, whether a vet visit is suggested,
 # and in-game currency). The *text* shown to the owner is breed-specific -
 # see BREED_AVATAR_MESSAGES below.
+# passive_coins_per_2hr: coins credited every 2 hours when this mood is active.
+# Only happy and thriving earn passive coins; thriving is 2x the happy rate.
+# All vet-flagged moods (concerned, distressed) earn 0 — a health signal must
+# never be drowned out by a reward animation.
 MOOD_META = {
-    "thriving": {"avatar_action": "growing", "vet_recommended": False, "currency_earned": 20},
-    "happy": {"avatar_action": "playing", "vet_recommended": False, "currency_earned": 10},
-    "content": {"avatar_action": "relaxing", "vet_recommended": False, "currency_earned": 8},
-    "bored": {"avatar_action": "waiting_by_door", "vet_recommended": False, "currency_earned": 5},
-    "tired": {"avatar_action": "resting", "vet_recommended": False, "currency_earned": 5},
-    "uneasy": {"avatar_action": "fidgeting", "vet_recommended": False, "currency_earned": 3},
-    "concerned": {"avatar_action": "resting_with_owner", "vet_recommended": True, "currency_earned": 0},
-    "anxious": {"avatar_action": "pacing", "vet_recommended": False, "currency_earned": 5},
-    "overtired": {"avatar_action": "grumpy_resting", "vet_recommended": False, "currency_earned": 2},
-    "distressed": {"avatar_action": "curled_up", "vet_recommended": True, "currency_earned": 0},
+    "thriving":  {"avatar_action": "growing",          "vet_recommended": False, "currency_earned": 20, "passive_coins_per_2hr": 10},
+    "happy":     {"avatar_action": "playing",           "vet_recommended": False, "currency_earned": 10, "passive_coins_per_2hr": 5},
+    "content":   {"avatar_action": "relaxing",          "vet_recommended": False, "currency_earned": 8,  "passive_coins_per_2hr": 0},
+    "bored":     {"avatar_action": "waiting_by_door",   "vet_recommended": False, "currency_earned": 5,  "passive_coins_per_2hr": 0},
+    "tired":     {"avatar_action": "resting",           "vet_recommended": False, "currency_earned": 5,  "passive_coins_per_2hr": 0},
+    "uneasy":    {"avatar_action": "fidgeting",         "vet_recommended": False, "currency_earned": 3,  "passive_coins_per_2hr": 0},
+    "concerned": {"avatar_action": "resting_with_owner","vet_recommended": True,  "currency_earned": 0,  "passive_coins_per_2hr": 0},
+    "anxious":   {"avatar_action": "pacing",            "vet_recommended": False, "currency_earned": 5,  "passive_coins_per_2hr": 0},
+    "overtired": {"avatar_action": "grumpy_resting",    "vet_recommended": False, "currency_earned": 2,  "passive_coins_per_2hr": 0},
+    "distressed":{"avatar_action": "curled_up",         "vet_recommended": True,  "currency_earned": 0,  "passive_coins_per_2hr": 0},
 }
+
+# Mission windows: owners can complete a mission up to twice per day —
+# once in the morning window and once in the evening window.
+MISSION_WINDOWS = {
+    "morning": (6, 12),   # 06:00–11:59
+    "evening": (17, 22),  # 17:00–21:59
+}
+
+# Login streak milestones: big coin + XP hauls on day 7 and day 30.
+LOGIN_STREAK_MILESTONES = {
+    7:  {"coins": 100, "xp": 20, "badge": "day_7",  "cosmetic_unlock": False},
+    30: {"coins": 500, "xp": 50, "badge": "day_30", "cosmetic_unlock": True},
+}
+
+# Flat reward for completing any training lesson.
+TRAINING_LESSON_REWARD = {"coins": 10, "xp": 15}
+
+# Social dog-meeting outcomes and their rewards (both owners receive).
+MEETING_REWARDS = {
+    "growled":  {"coins": 0,   "xp": 0,  "social_skills_xp": 1,  "fireworks": False, "label": "Went their separate ways"},
+    "friends":  {"coins": 50,  "xp": 5,  "social_skills_xp": 5,  "fireworks": False, "label": "Friends"},
+    "love":     {"coins": 250, "xp": 20, "social_skills_xp": 10, "fireworks": True,  "label": "Love at first sight"},
+}
+
+
+def get_mission_window() -> Optional[str]:
+    """Return the name of the currently active mission window, or None."""
+    hour = datetime.now().hour
+    for name, (start, end) in MISSION_WINDOWS.items():
+        if start <= hour < end:
+            return name
+    return None
 
 
 # Breed-specific copy for each mood, written from each breed's documented
@@ -566,6 +603,8 @@ def compute_avatar_state(score: dict, reading: WearableReading) -> dict:
         "vet_recommended": meta["vet_recommended"],
         "currency_earned": meta["currency_earned"],
         "xp_earned": round(score["overall_score"] / 10, 1),
+        "passive_coins_per_2hr": meta["passive_coins_per_2hr"],
+        "mission_window": get_mission_window(),
     }
 
 
@@ -605,3 +644,38 @@ def avatar_state(reading: WearableReading):
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return {"wellness": score, "avatar": compute_avatar_state(score, reading)}
+
+
+class DogMeeting(BaseModel):
+    outcome: str  # "growled" | "friends" | "love"
+
+
+@app.post("/social/meeting")
+def record_meeting(meeting: DogMeeting):
+    """Return the coin/XP rewards for a confirmed in-person dog meeting.
+
+    Both owners submit independently with the same outcome; the calling
+    client is responsible for the two-owner confirmation flow.
+    """
+    rewards = MEETING_REWARDS.get(meeting.outcome)
+    if not rewards:
+        valid = list(MEETING_REWARDS)
+        raise HTTPException(status_code=422, detail=f"Unknown outcome '{meeting.outcome}'. Valid values: {valid}")
+    return rewards
+
+
+@app.get("/rewards/login-streak/{streak_days}")
+def login_streak_reward(streak_days: int):
+    """Return the milestone bonus for a given login-streak day count.
+
+    Returns coins=0 / xp=0 / badge=None for non-milestone days so the
+    client can always call this endpoint without special-casing.
+    """
+    reward = LOGIN_STREAK_MILESTONES.get(streak_days, {"coins": 0, "xp": 0, "badge": None, "cosmetic_unlock": False})
+    return {"streak_days": streak_days, **reward}
+
+
+@app.post("/training/lesson/complete")
+def complete_training_lesson():
+    """Return the flat coin + XP reward for completing any training lesson."""
+    return TRAINING_LESSON_REWARD
