@@ -15,7 +15,7 @@ from datetime import date, timedelta
 import requests
 import streamlit as st
 
-from market_data import HK_MARKET_OVERVIEW, HK_MARKET_SOURCES
+from market_data import HK_BREED_POPULARITY, HK_MARKET_OVERVIEW, HK_MARKET_SOURCES
 
 API_BASE = os.environ.get("TECHPUP_API_BASE", "http://127.0.0.1:8000")
 
@@ -449,6 +449,20 @@ with tab_market:
 
     st.write(f"Average lifetime spend per pet: **HK${o['avg_lifetime_spend_per_pet_hkd']:,}**")
     st.write(f"Female owner share: **{o['female_owner_share_pct']}%**")
+
+    st.divider()
+    st.subheader("Most popular breeds in HK — Top 10")
+    st.caption("Ranked by estimated share of registered dog owners. ✅ = TechPup v1 supported breed.")
+
+    for row in HK_BREED_POPULARITY:
+        supported = "✅" if row["techpup_supported"] else "·"
+        bar_pct = row["owner_share_pct"] / HK_BREED_POPULARITY[0]["owner_share_pct"]
+        col_rank, col_breed, col_bar, col_pct = st.columns([0.5, 2, 4, 1])
+        col_rank.write(f"**#{row['rank']}**")
+        col_breed.write(f"{supported} {row['breed']}")
+        col_bar.progress(bar_pct, text="")
+        col_pct.write(f"{row['owner_share_pct']}%")
+        st.caption(f"  ↳ {row['size_note']}")
 
     st.divider()
     st.caption("Sources")
