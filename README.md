@@ -1,108 +1,175 @@
-# Dog-wellness-dashboard (TechPup Internal Dashboard)
+# TechPup — Internal Dashboard
 
-Internal tool for the TechPup team: dog breed health intelligence, wearable
-wellness scoring, a "Reverse Tamagotchi" mood/avatar engine, and Hong Kong
-pet-market reference data.
+> Dog breed health intelligence · Wearable wellness scoring · Reverse Tamagotchi avatar engine · Hong Kong market data
 
-## Files
+**Company:** Visual Earth Limited (Hong Kong)
+**Stack:** FastAPI backend + Streamlit dashboard · No database · No API key required
 
-- `api.py` — FastAPI backend. Contains a curated breed-reference table for
-  TechPup's five focus breeds (Tong Gau, Poodle, Shiba Inu, Pembroke Welsh
-  Corgi, Golden Retriever) with breed-accurate resting heart-rate ranges and
-  daily activity baselines, plus a wellness-score endpoint that combines
-  those baselines with wearable readings (heart rate, activity minutes,
-  weight, sleep quality, morning mobility), and an avatar-state endpoint that
-  maps the reading to a "Reverse Tamagotchi" mood/quest.
-- `market_data.py` — static Hong Kong pet-market stats and source links
-  (USDA report, trade.gov, Gitnux, Bangkok Post).
-- `dashboard.py` — Streamlit dashboard with four tabs: Breed Intelligence,
-  Wellness Score, Reverse Tamagotchi, and HK Market. The Reverse Tamagotchi
-  tab implements the core game loop from `research/core-game-loop-blueprint.md`:
-  each avatar mood surfaces one daily mission (the breed-specific `quest`),
-  completing it awards PupCoins and XP (tracked in session state), and
-  streaks/badges unlock per `research/retention-monetization-strategy.md`.
-- `requirements.txt`, `.env.example`
+---
 
-## Setup
+## Quick start
 
 ```bash
+# 1. Install dependencies
 pip install -r requirements.txt
-```
 
-No API key is needed — breed data is self-contained in `api.py`.
-
-## Run
-
-Start the API backend (run from this `techpup-dashboard` folder):
-
-```bash
+# 2. Start the API (terminal 1)
 uvicorn api:app --reload
-```
 
-In a second terminal, start the dashboard:
-
-```bash
+# 3. Start the dashboard (terminal 2)
 streamlit run dashboard.py
 ```
 
-The dashboard opens at http://localhost:8501 and talks to the API at
-http://127.0.0.1:8000 (override with `TECHPUP_API_BASE` if you deploy the
-API elsewhere).
+Dashboard → http://localhost:8501  
+API → http://127.0.0.1:8000  
+Override API URL: set `TECHPUP_API_BASE` in your environment or `.env`.
 
-## Endpoints
+---
 
-- `GET /breeds` — list of the 5 supported breeds
-- `GET /breeds/{breed_name}` — breed health profile (avg weight, lifespan,
-  temperament, breed group)
-- `GET /breeds/{breed_name}/activity-baseline` — recommended daily activity
-  minutes/range, breed-accurate resting heart-rate range, and the breed's
-  normal morning-mobility floor (%)
-- `POST /wellness/score` — body `{breed, activity_minutes, heart_rate_bpm,
-  weight_kg, sleep_quality, morning_mobility}` (the last two are 0-100),
-  returns an overall 0-100 wellness score plus per-factor scores
-  (activity, heart rate, weight, joint health, and a breed-weighted
-  `recovery_index` blending sleep, morning mobility, heart-rate stability,
-  and activity balance) and flags (e.g. "low activity", "elevated heart
-  rate", "weight deviation", "possible joint discomfort - recommend vet
-  check" when morning mobility is below the breed's normal floor and sleep
-  quality is also low)
-- `POST /avatar/state` — same body as `/wellness/score`, returns
-  `{wellness, avatar}` where `avatar` is a "Reverse Tamagotchi" mood
-  (`mood`, `avatar_action`, `message`, `quest`, `vet_recommended`,
-  `currency_earned`, `xp_earned`)
+## Project files
 
-## Mood matrix
-
-`compute_avatar_state` first checks cross-signal combinations (energy balance
-of activity vs. sleep, heart-rate spikes vs. breed baseline, and morning
-mobility as a joint/pain indicator):
-
-| Scenario | Mood |
+| File | Purpose |
 |---|---|
-| High sleep (>85) + optimal activity (0.7-1.3x baseline) + baseline HR + mobility at/above the breed's normal floor | `thriving` |
-| Poor sleep (<50) + high activity (>1.3x baseline) + elevated HR | `overtired` |
-| High sleep (>85) + near-zero activity (<0.2x baseline) + elevated HR | `anxious` |
-| Poor sleep (<50) + low activity (<0.5x baseline) + elevated HR + mobility below the breed's normal floor | `distressed` (vet recommended) |
+| `api.py` | FastAPI backend — breed profiles, wellness scoring, avatar engine, gamification endpoints |
+| `dashboard.py` | Streamlit UI — 4-tab internal dashboard |
+| `market_data.py` | Static HK pet-market stats, breed popularity rankings, source links |
+| `requirements.txt` | Python dependencies |
+| `.env.example` | Environment variable template |
+| `research/` | Product & developer spec docs |
 
-Anything not matching those falls back to severity-graded moods based on the
-wellness sub-scores: `concerned` (vet recommended), `uneasy`, `tired`,
-`bored`, `thriving`, `happy`, `content`.
+---
 
-## Breed reference table
+## Dashboard tabs
 
-| Breed | Daily activity (min) | Resting HR (bpm) | Normal morning mobility |
+### Breed Intelligence
+Lookup table for all 5 supported breeds — daily activity range, resting heart-rate range, normal morning mobility floor, and breed-specific health notes.
+
+### Wellness Score
+Send a wearable reading (activity, heart rate, weight, sleep quality, morning mobility) and get back a 0–100 overall wellness score broken into 5 sub-scores:
+
+| Sub-score | What it measures |
+|---|---|
+| Activity | Minutes vs breed daily baseline |
+| Heart rate | BPM vs breed resting range |
+| Weight | Current vs breed avg range |
+| Joint health | Morning mobility vs breed floor |
+| Recovery index | Breed-weighted blend of sleep, mobility, HR stability, activity balance |
+
+### Reverse Tamagotchi
+The core gamification loop. Dog's wearable data → avatar mood → daily mission → rewards.
+
+**Session state tracks:**
+- PupCoins, XP, Level (50 XP per level)
+- Mission streak (consecutive days with at least one mission completed)
+- Login streak (consecutive days the app was opened)
+- Badges earned
+- Morning / evening mission window completion
+- Social Skills XP
+
+**Reward actions available in this tab:**
+- Complete morning mission (06:00–12:00)
+- Complete evening mission (17:00–22:00) — +5 bonus coins if both windows done today
+- Complete a training lesson (+10 coins, +15 XP)
+- Rate a dog social meeting (🐾 / 🐕 / ❤️)
+
+### HK Market
+Key Hong Kong pet-market figures (market size, dog population, ownership rate) plus a ranked breed popularity table — top 10 breeds by estimated owner share, with TechPup-supported breeds flagged.
+
+---
+
+## API endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/breeds` | List supported breeds |
+| `GET` | `/breeds/{breed_name}` | Breed profile (weight, lifespan, temperament) |
+| `GET` | `/breeds/{breed_name}/activity-baseline` | Activity range, HR range, mobility floor |
+| `POST` | `/wellness/score` | Compute wellness score from wearable reading |
+| `POST` | `/avatar/state` | Compute avatar mood, mission, and rewards |
+| `POST` | `/social/meeting` | Record a dog social meeting outcome |
+| `GET` | `/rewards/login-streak/{days}` | Get milestone reward for login streak day N |
+| `POST` | `/training/lesson/complete` | Award coins + XP for completing a training lesson |
+
+**Wellness / avatar request body:**
+```json
+{
+  "breed": "Golden Retriever",
+  "activity_minutes": 90,
+  "heart_rate_bpm": 75,
+  "weight_kg": 30.0,
+  "sleep_quality": 80,
+  "morning_mobility": 88,
+  "poodle_size": null
+}
+```
+
+---
+
+## Avatar mood system
+
+The avatar has **10 mood states** derived from wearable readings + breed-specific thresholds.
+
+**Priority cross-signal rules (checked first):**
+
+| Condition | Mood |
+|---|---|
+| High sleep + optimal activity + normal HR + mobility ≥ breed floor | `thriving` |
+| Poor sleep + very high activity + elevated HR | `overtired` |
+| High sleep + near-zero activity + elevated HR | `anxious` |
+| Poor sleep + low activity + elevated HR + mobility below breed floor | `distressed` ⚠️ vet |
+
+**Fallback severity ladder** (when no cross-signal rule fires):
+`distressed` → `concerned` ⚠️ → `uneasy` → `tired` → `bored` → `content` → `happy` → `thriving`
+
+**Mission rewards by mood:**
+
+| Mood | PupCoins | Notes |
+|---|---|---|
+| Thriving | 20 | |
+| Happy | 10 | |
+| Content | 8 | |
+| Bored / Tired / Anxious | 5 | |
+| Uneasy / Overtired | 2–3 | |
+| Concerned / Distressed | 0 | Vet nudge shown; passive coins paused |
+
+**Passive coins** (calculated on next app open):
+- `happy` mood → 5 coins per 2 hours
+- `thriving` mood → 10 coins per 2 hours
+
+---
+
+## Gamification summary
+
+| Mechanic | Detail |
+|---|---|
+| PupCoins | Earned per mission, passive ticks, social, training, streak milestones |
+| XP | `wellness_score ÷ 10` per mission; flat bonus per training/social action |
+| Levels | 50 XP per level — never regresses |
+| Mission streak | Consecutive days with ≥ 1 mission; resets to 1 (not 0) on a miss |
+| Login streak | Consecutive days app opened; day 7 = +100 coins; day 30 = +500 coins + badge |
+| Badges | 10 badges — streak milestones, thriving, joint guardian, social, training, login |
+| Cosmetic shop | PupCoin-based; no level gates; rotating weekly items *(planned)* |
+
+---
+
+## Supported breeds (v1)
+
+| Breed | Activity (min/day) | Resting HR (bpm) | Morning mobility |
 |---|---|---|---|
-| Tong Gau | 60-90 | 70-100 | >= 95% |
-| Poodle (Standard) | 60-90 | 60-80 | >= 90% |
-| Poodle (Toy / Miniature) | 25-45 | 100-130 | >= 90% |
-| Shiba Inu | 45-70 | 80-110 | >= 90% |
-| Pembroke Welsh Corgi | 45-60 | 80-100 | >= 90% |
-| Golden Retriever | 80-120 | 60-80 | >= 85% |
+| Tong Gau | 60–90 | 70–100 | ≥ 95% |
+| Poodle (Standard) | 60–90 | 60–80 | ≥ 90% |
+| Poodle (Mini / Toy) | 25–45 | 100–130 | ≥ 90% |
+| Shiba Inu | 45–70 | 80–110 | ≥ 90% |
+| Pembroke Welsh Corgi | 45–60 | 80–100 | ≥ 90% |
+| Golden Retriever | 80–120 | 60–80 | ≥ 85% |
 
-## Notes
+Unsupported breed names return a `404` with the supported list. Add new breeds in `BREED_PROFILES` inside `api.py`.
 
-- Only the 5 breeds in `BREED_PROFILES` (in `api.py`) are supported; other
-  breed names return a 404 listing the supported set. Add more breeds there
-  as TechPup's coverage grows.
-- `market_data.py` holds static figures pulled from public 2025/2026 market
-  reports — refresh these manually as new reports are published.
+---
+
+## Research docs
+
+| File | Contents |
+|---|---|
+| `research/competitive-analysis-and-usp.md` | Full product & developer specification — all 6 app tabs, reward economy, user registration flow |
+| `research/core-game-loop-blueprint.md` | Game loop design, 12-stage user journey, reward system deep-dive |
