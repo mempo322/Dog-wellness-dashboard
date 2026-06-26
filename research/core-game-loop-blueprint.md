@@ -264,3 +264,203 @@ Real-world dog meetings become in-app events rated by both owners:
 Every morning, fresh collar data produces a new avatar mood. That mood becomes one clear mission. Completing it with the real dog feeds back into tomorrow's data — closing the loop. PupCoins reward the action immediately. XP and levels reward consistency over weeks. Streaks, login bonuses, and social interactions reward consistency over months. Three reward horizons stacked on the same single daily action, so there is always a reason to open the app today and a reason to come back tomorrow.
 
 > *"One mood. One mission. One walk. Every day — and your dog's avatar (and your dog) both get a little better for it."*
+
+---
+
+## 6. HK Breed Market — Popularity & TechPup Coverage
+
+The chart below shows the top 10 breeds by estimated owner share in Hong Kong (2025–2026). Navy bars are breeds already supported in TechPup v1; grey bars are expansion targets for v2+.
+
+![HK Breed Rankings — Top 10 by estimated owner share](hk-breed-ranking.png)
+
+**Coverage read:** TechPup v1 covers 5 of the top 10 breeds (Poodle #1, Golden Retriever #4, Corgi #5, Shiba Inu #6, Tong Gau #10), representing an estimated **46% of HK dog owners** combined. The three largest untapped segments — French Bulldog (#2, 14%), Shih Tzu (#3, 11%), and Maltese (#7, 7%) — are the priority targets for v2 breed expansion.
+
+---
+
+## 7. Social Competition System — Owner vs Owner Rankings
+
+### 7.1 Why Add Competition?
+
+The individual game loop (mood → mission → coins → level) drives daily habit. Competition adds a second pull: **other people's dogs make yours feel slow**. A leaderboard seen once a week is enough to push a skipped evening mission into a completed one.
+
+Design rules for competition:
+1. **Never punish low performers publicly.** Rankings show top dogs, not a shame ladder.
+2. **Competition is always opt-in.** A dog profile is private by default.
+3. **Breed-fair by default.** No Chihuahua competes against a Golden Retriever on steps.
+4. **Multiple axes.** One dog can be #1 in Likes but #12 in Level — giving every owner a lane.
+
+---
+
+### 7.2 Dog Public Profile
+
+When an owner makes their dog's profile public, it becomes a shareable page other users can visit, follow, and interact with.
+
+| Field | Visible to followers | Notes |
+|---|---|---|
+| Dog name + breed | ✅ | |
+| Avatar (current mood) | ✅ | Updates daily, no raw biometric data |
+| Level | ✅ | Computed from cumulative XP |
+| Weekly Wellness Score | ✅ | Breed-normalised 0–100 |
+| Follower count | ✅ | |
+| Weekly Paws (likes) received | ✅ | |
+| Mission streak | ✅ | |
+| Badges earned | ✅ | |
+| Raw health data (HR, weight, sleep) | ❌ | Never exposed publicly |
+
+---
+
+### 7.3 Four Competition Axes
+
+| Axis | What it measures | Reset cycle | Scope |
+|---|---|---|---|
+| **Level** | Total XP earned since registration | Never (permanent) | Global + same breed |
+| **Weekly Wellness Score** | Average daily wellness score over the past 7 days | Every Monday 00:00 | Same breed only |
+| **Followers** | Total follower count | Never (permanent) | Global |
+| **Weekly Paws (Likes)** | Paw reactions received from followers in the past 7 days | Every Monday 00:00 | Global |
+
+Each axis has its own leaderboard. One dog can rank in multiple — or just one. This prevents a single mega-active dog from dominating every category.
+
+---
+
+### 7.4 Leaderboard Structure
+
+```
++-----------------------------------------------------------+
+|  LEADERBOARDS                       [ This Week ]         |
++-----------------------------------------------------------+
+|  [ By Level ]  [ Wellness Score ]  [ Followers ]  [ Paws ]|
++-----------------------------------------------------------+
+|  BREED FILTER: [ All ] [ Poodle ] [ Golden Retriever ]... |
++-----------------------------------------------------------+
+
+  BY LEVEL — Global Top 10 (this week)
+  ┌────┬──────────────────────┬──────┬───────┬──────────┐
+  │ #  │ Dog                  │ Lvl  │ Breed │ Followers│
+  ├────┼──────────────────────┼──────┼───────┼──────────┤
+  │ 1  │ 🤩 Mochi             │  47  │ Corgi │   1,204  │
+  │ 2  │ 🙂 Butter            │  44  │ Poodle│     987  │
+  │ 3  │ 😌 Shadow            │  41  │ Shiba │     743  │
+  │ …  │ …                    │  …   │ …     │     …    │
+  │ ?  │ [Your dog rank here] │  12  │ Corgi │      34  │
+  └────┴──────────────────────┴──────┴───────┴──────────┘
+                              [ View your breed only ]
+```
+
+**Your position** is always shown at the bottom of any leaderboard, even if outside the top 10.
+
+---
+
+### 7.5 Paw Reactions (Likes System)
+
+Followers send a **Paw** (🐾) reaction to a dog's daily mood update. This is the "like" of the TechPup social layer.
+
+| Rule | Detail |
+|---|---|
+| How to send | Tap 🐾 on any public dog's daily update card |
+| Limit | 5 Paws per user per day (prevents farming) |
+| Reward to recipient | +2 PupCoins per Paw received |
+| Weekly Paws leaderboard | Top 10 most-Pawed dogs this week, globally |
+| Milestone badge | "Fan Favourite" — awarded at 100 Paws in a single week |
+
+**What triggers a daily update card** (the thing followers can Paw):
+- Avatar mood change (morning sync)
+- Mission completed
+- Badge unlocked
+- Level-up
+- New "Love" social meeting
+
+---
+
+### 7.6 Follower System
+
+| Action | How |
+|---|---|
+| Follow a dog | Tap Follow on any public profile |
+| Unfollow | Tap again, no notification sent |
+| Follower feed | Home tab "Community" sub-section shows today's updates from followed dogs |
+| Follower milestones | 10 followers → "Rising Star" badge; 100 → "Local Legend"; 500 → "HK Icon" |
+| Follower count leaderboard | Global Top 10 most-followed dogs (reset: never) |
+
+Follower counts are **permanent** — they do not reset weekly. This rewards sustained community engagement over time, separate from the weekly activity-based rankings.
+
+---
+
+### 7.7 Competition Loop Diagram
+
+```
+        ┌──────────────────────────────────────────────────┐
+        │              OWNER OPENS APP DAILY               │
+        └─────────────────────┬────────────────────────────┘
+                              │
+                              ▼
+        ┌──────────────────────────────────────────────────┐
+        │         COMPLETES MISSION / EARNS XP             │
+        │   XP → Level  │  Score → Wellness Leaderboard    │
+        └──────┬─────────────────────────┬─────────────────┘
+               │                         │
+               ▼                         ▼
+  ┌────────────────────┐    ┌──────────────────────────┐
+  │  LEVEL LEADERBOARD │    │  WELLNESS LEADERBOARD    │
+  │  Global ranking    │    │  Same-breed only         │
+  │  by cumulative XP  │    │  Resets every Monday     │
+  └────────────────────┘    └──────────────────────────┘
+               │                         │
+               └────────────┬────────────┘
+                            │
+                            ▼
+        ┌──────────────────────────────────────────────────┐
+        │         DAILY UPDATE POSTED TO FOLLOWERS         │
+        │  Mood card / badge unlock / level-up / meeting   │
+        └──────────────────┬───────────────────────────────┘
+                           │
+               ┌───────────┴───────────┐
+               ▼                       ▼
+  ┌─────────────────────┐   ┌──────────────────────────┐
+  │  FOLLOWERS PAW IT   │   │  NEW USERS DISCOVER DOG  │
+  │  +2 coins/Paw       │   │  → Follow → more Paws    │
+  │  Weekly Paws rank   │   │  → Follower leaderboard  │
+  └──────────┬──────────┘   └──────────┬───────────────┘
+             │                         │
+             └────────────┬────────────┘
+                          │
+                          ▼
+        ┌──────────────────────────────────────────────────┐
+        │           MILESTONE BADGES UNLOCK                │
+        │  Fan Favourite / Rising Star / HK Icon           │
+        │  → Shown on public profile → attracts more       │
+        │    followers → closes the social flywheel        │
+        └──────────────────┬───────────────────────────────┘
+                           │
+                           ▼
+        ┌──────────────────────────────────────────────────┐
+        │         OWNER RETURNS TOMORROW                   │
+        │  Checking rank = extra motivation to not miss    │
+        │  a mission or a follower's Paw                   │
+        └──────────────────────────────────────────────────┘
+```
+
+---
+
+### 7.8 Competition Badges
+
+| Badge | Trigger |
+|---|---|
+| 🏅 Top of the Pack | Reach #1 on any leaderboard for 1 week |
+| ⭐ Rising Star | Hit 10 followers |
+| 🌟 Local Legend | Hit 100 followers |
+| 🏆 HK Icon | Hit 500 followers |
+| 🐾 Fan Favourite | Receive 100 Paws in a single week |
+| 👑 Level King | Reach top 3 on the Level leaderboard (any breed filter) |
+| 🔥 Wellness Champion | #1 Wellness Score in your breed for 2 consecutive weeks |
+
+---
+
+### 7.9 Anti-Gaming Rules
+
+| Risk | Rule |
+|---|---|
+| Fake followers (self-follow rings) | Follow requires a registered account; accounts with 0 own dogs cannot follow |
+| Paw farming between alts | 5 Paws per user per day, hard server-side limit |
+| Solo social meeting XP farming | Both owners must verify the same outcome (existing rule) |
+| Level sandbagging | Level is cumulative only — no reset, no manipulation |
+| Score manipulation | Wellness score is computed server-side from collar data only; no manual override |
