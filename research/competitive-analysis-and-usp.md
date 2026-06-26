@@ -315,21 +315,6 @@ Each chip is tappable and deep-links to the relevant tab.
 
 ---
 
-## Technical Stack
-
-| Layer | Technology |
-|---|---|
-| Backend API | FastAPI (Python) — `api.py` |
-| Internal dashboard (current) | Streamlit — `dashboard.py` |
-| Mobile app | React Native or Flutter |
-| Database | PostgreSQL |
-| Auth | JWT (email/password) + OAuth (Apple, Google) |
-| Collar communication | BLE (Bluetooth Low Energy) + cloud sync |
-
-**Key rule:** Avatar, history, coins, XP, and badges are stored per dog profile — never per device. Data survives a phone swap, collar replacement, or subscription gap.
-
----
-
 ## What Makes TechPup Different
 
 | Competitor | Their approach | TechPup instead |
